@@ -5,8 +5,11 @@ using System.Xml.Linq;
 
 InventoryManager manager = new InventoryManager();
 
+List<Customer> customerDatabase = new List<Customer>();
+List<LawnMower> inventory = new List<LawnMower>();
 
-Console.WriteLine("\nWelcome to Lawn Mower Rental App !");
+Console.WriteLine("\n-------Welcome to Lawn Mower Rental App!-------");
+
 
 while (true)
 {
@@ -25,33 +28,29 @@ while (true)
         switch (choice)
         {
             case 1:
-                AddCustomer.RegisterNewCustomer();
+                Customer.RegisterNewCustomer();
                 break;
+
             case 2:
                 manager.DisplayInventory();
                 break;
-                case 3:
-                Console.Write("Enter Customer ID: ");
-                int customerId = int.Parse(Console.ReadLine());
-                Console.Write("Enter the MowerId to rent: ");
-                int rentMowerId = int.Parse(Console.ReadLine());
-                Console.Write("Enter the quantity to rent: ");
-                int rentQuantity = int.Parse(Console.ReadLine());
-                manager.RentLawnMower(rentMowerId, rentQuantity);
-               
+
+            case 3:               
+                manager.RentLawnMower();
                 break;
-                case 4:
-                Console.Write("Enter Customer ID: ");
-                int customerid = int.Parse(Console.ReadLine());
-                Console.Write("Enter the MowerId to return: ");
-                int returnMowerId = int.Parse(Console.ReadLine());
-                Console.Write("Enter the quantity to return: ");
-                int returnQuantity = int.Parse(Console.ReadLine());
-                manager.ReturnLawnMower(returnMowerId, returnQuantity);
-                decimal rentalCost = manager.CalculateRentalCost(returnMowerId);
-                Console.WriteLine($"Rental Cost: {rentalCost}SEK");
-                Console.WriteLine($"MowerId:{returnMowerId}, Quantity: {returnQuantity} has returned successfully.");
+
+            case 4:            
+                manager.ReturnLawnMower();              
                 break;
+
+            case 5:
+                InventoryManager.ListCustomersWithAtiveRentals();
+                break;
+
+            case 6:
+                Environment.Exit(0);
+                break;
+
             default:
                 Console.WriteLine("Invalid option. Please try again.");
                 break;
