@@ -13,10 +13,10 @@ using static System.Net.Mime.MediaTypeNames;
 namespace LawnMowerApp
 {
 
-    class InventoryManager
+    public class InventoryManager
     {
 
-        static List<Customer> customerDatabase = new List<Customer>();
+        static List<Customer> customers= new List<Customer>();
         static List<Rental> rentals = new List<Rental>();
 
         static List<LawnMower> inventory;
@@ -26,32 +26,47 @@ namespace LawnMowerApp
 
             inventory = new List<LawnMower>
         {
-            new LawnMower { MowerId = 1, Model = "HUSKVARNA LB 146 ",  Type = "Petrol  ",   DailyRate = 30,  QuantityInStock = 5 },
-            new LawnMower { MowerId = 2, Model = "HUSQVARNA LC 141C",  Type = "Electric",   DailyRate = 20,  QuantityInStock = 5 },
-            new LawnMower { MowerId = 3, Model = "HUSQVARNA LC 34  ",  Type = "Manual  ",   DailyRate = 10,  QuantityInStock = 5 },
-
+          
+            new ElectricLawnMower(1, "HUSKVARNA Electrical", 75 , 30, 5),
+            new ElectricLawnMower(2, "HUSKVARNA Electrical", 146, 50, 5),
+            new PetrolLawnMower  (3, "HUSKVARNA Petrol    ", 862, 80, 5),
         };
+       
         }
         public void DisplayInventory()
         {
             Console.WriteLine("\nCurrent Inventory:");
             Console.WriteLine("-------------------");
-            foreach (var item in inventory)
+            foreach (var mower in inventory)
             {
-                Console.WriteLine($"MowerId:{item.MowerId}, Model: {item.Model}, Type: {item.Type}, DailyRate: {item.DailyRate}SEK, QuantityInStock: {item.QuantityInStock}");
+                Console.WriteLine($"Mower ID:{mower.MowerId}, Model: {mower.Model}, {mower.GetAdditionalInfo()}, Price: {mower.Price}SEK, QuantityInStock: {mower.QuantityInStock}");
+                
             }
         }
 
         public bool RentLawnMower()
         {
+
+      
             Console.WriteLine("\n Rent a lawn Mower ");
             Console.WriteLine("---------------------\n ");
             Console.Write("\nEnter Customer ID: ");
-            int customerId = int.Parse(Console.ReadLine());
+            string customerId = Console.ReadLine();
+
+            List<Customer> customers = new List<Customer>();
+
+            bool customer = customers.Exists(x => x.CustomerId.Equals(customerId));
+            if (customer = false)
+            {
+                Console.WriteLine("Customer is not registered. Please register the customer first.");
+                return true;
+                
+            }
+
+
             Console.Write("Enter MowerId to Rent: ");
             int mowerId = int.Parse(Console.ReadLine());
-            Console.Write("Enter Quantity to Rent: ");
-            int quantity = int.Parse(Console.ReadLine());
+           
 
             var lawnMower = inventory.Find(lm => lm.MowerId == mowerId);
             if (lawnMower == null)
@@ -60,27 +75,48 @@ namespace LawnMowerApp
                 return false;
             }
 
-            if (lawnMower.QuantityInStock >= quantity)
+            if (lawnMower.QuantityInStock >0)
             {
                 Console.Write("Enter Rental Start Date (YY-MM-DD): ");
-                DateTime startDate = DateTime.Parse(Console.ReadLine());
+                if (!DateTime.TryParse(Console.ReadLine(), out var startDate))
+                {
+                    Console.WriteLine("Invalid date format. Please use YY-MM-DD.");
+                    return false;
+                }
 
                 Console.Write("Enter Rental Return Date (YY-MM-DD): ");
-                DateTime returnDate = DateTime.Parse(Console.ReadLine());
+            
+                if (!DateTime.TryParse(Console.ReadLine(), out var returnDate))
+                {
+                    Console.WriteLine("Invalid date format. Please use YY-MM-DD.");
+                    return false;
+                }
+
+                Console.Write("Enter Customer Type (Basic/Prime): ");
+                string customerType = Console.ReadLine();
+
+                if (customerType.Equals("basic", StringComparison.OrdinalIgnoreCase))
+                {
+                   
+                    if ((returnDate - startDate).TotalDays > 7)
+                    {
+                        Console.WriteLine("\nBasic customers have a rental limit of seven days for new rentals.");
+                        return false;
+                    }
+                }
 
                 int daysRented = (int)(returnDate - startDate).TotalDays;
 
-                lawnMower.QuantityInStock -= quantity;
+                lawnMower.QuantityInStock --;
                 rentals.Add(new Rental
                 {
                     CustomerId = customerId, 
                     MowerId = mowerId,
-                    Quantity = quantity,
                     StartDate = startDate,
                     ReturnDate = returnDate
                 });
 
-                Console.WriteLine($"\nMowerId:{mowerId} is rented for {daysRented} days.");
+                Console.WriteLine($"\n{customerType} customer rented MowerId:{mowerId} for {daysRented} days.");
                 return true;
 
             }
@@ -90,20 +126,17 @@ namespace LawnMowerApp
                 return false;
             }
         }
-
-
+  
         public bool ReturnLawnMower()
         {
             Console.WriteLine("\n Return a lawn Mower ");
             Console.WriteLine("---------------------\n ");
             Console.Write("Enter Customer ID: ");
-            int customerid = int.Parse(Console.ReadLine());
+            int customerid = int.Parse(Console.ReadLine());        
 
             Console.Write("Enter the MowerId to return: ");
             int mowerId = int.Parse(Console.ReadLine());
 
-            Console.Write("Enter the quantity to return: ");
-            int quantity = int.Parse(Console.ReadLine());
 
             var lawnMower = inventory.Find(lm => lm.MowerId == mowerId);
             if (lawnMower == null)
@@ -112,12 +145,32 @@ namespace LawnMowerApp
                 return false;
             }
 
-            lawnMower.QuantityInStock += quantity;
+            lawnMower.QuantityInStock ++;
             decimal rentalCost = CalculateRentalCost(mowerId);
+
             Console.WriteLine($"\nRental Cost: {rentalCost} SEK");
             Console.WriteLine($"\nMowerId:{mowerId} has returned successfully.");
             return true;
 
+        }
+        public int Rentalcost()
+        {
+            Console.WriteLine("Enter the rented mower Id.");
+            int input = Convert.ToInt32(Console.ReadLine());
+            LawnMower mower = inventory.Find(m => m.MowerId == input);
+            if (mower != null)
+            {
+                Console.WriteLine("enter the number of the days rented: ");
+                int rentalDays = Convert.ToInt32(Console.ReadLine());
+                int rentalcost = rentalDays * mower.Price;
+                Console.WriteLine($"The rental cost is: {rentalcost}");
+                return rentalcost;
+            }
+            else
+            {
+                Console.WriteLine("Invalid mower Id.");
+                return 0;
+            }
         }
         public decimal CalculateRentalCost(int mowerId)
         {
@@ -128,7 +181,7 @@ namespace LawnMowerApp
             {
                 Console.WriteLine("Enter the number of days rented: ");
                 int rentalDays = int.Parse(Console.ReadLine());
-                decimal rentalCost = rentalDays * mower.DailyRate;
+                decimal rentalCost = rentalDays * mower.Price; ;
                 return rentalCost;
             }
             else
@@ -149,10 +202,10 @@ namespace LawnMowerApp
                     Console.WriteLine($"\n----Customer with Active Rentals----\n");
                     Console.WriteLine($"CustomerId: {rental.CustomerId}");
                     Console.WriteLine($"MowerId: {rental.MowerId}");
-                    Console.WriteLine($"Quantity: {rental.Quantity}");
                     Console.WriteLine($"Start Date: {rental.StartDate.ToShortDateString()}");
                     Console.WriteLine($"Return Date: {rental.ReturnDate.ToShortDateString()}");
                 }
+                else { Console.WriteLine("No Customers with active rentals"); }
             }
             }
         }

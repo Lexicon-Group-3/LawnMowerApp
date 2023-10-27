@@ -15,55 +15,82 @@ namespace LawnMowerApp
         public string Name { get; set; }
         public string Address { get; set; }
         public string PhoneNumber { get; set; }
-        public string PersonalNumber { get; set; }
-    
-
-        public Customer(string name, string address, string phoneNumber, string personalNumber)
+        public string CustomerId { get; set; }
+        public string Type { get; set; }
+        public Customer()
         {
-            Name = name;
-            Address = address;
-            PhoneNumber = phoneNumber;
-            PersonalNumber = personalNumber;
-          
         }
 
-        static List<Customer> customerDatabase = new List<Customer>();
+
+        public Customer(string customerId, string name, string phoneNumber, string address, string type)
+        {
+            CustomerId = customerId;
+            Name = name;
+            PhoneNumber = phoneNumber;
+            Address = address;
+            Type = type;
+        }
+
+
+        static List<Customer> customers = new List<Customer>();
         public static void RegisterNewCustomer()
         {
             Console.WriteLine("\nRegistering a New Customer");
             Console.WriteLine("----------------------------");
-            Console.Write("\nEnter customer name: ");
-            string name = Console.ReadLine();
 
-            Console.Write("Enter customer Address: ");
-            string address = Console.ReadLine();
+            Console.WriteLine("Enter customer Id: ");
+            string customerId = Console.ReadLine();
 
-            Console.Write("Enter customer Phone Number: ");
-            string phoneNumber = Console.ReadLine();
-
-            Console.Write("Enter customer's personal number (unique identifier): ");
-            string personalNumber = Console.ReadLine();
-
-            if (IsCustomerRegistered(personalNumber))
+            if (Exists(customerId))
             {
-                Console.WriteLine("\nThe Customer is already registered.");
+                Console.WriteLine("The customer is already registered.");
                 return;
             }
 
             else
             {
-                Customer newCustomer = new Customer(name, address, phoneNumber, personalNumber);
-                customerDatabase.Add(newCustomer);
-                Console.WriteLine("\nCustomer registered Successfully.");
+                Console.Write("Enter customer name: ");
+                string name = Console.ReadLine();
+
+                Console.Write("Enter customer address: ");
+                string address = Console.ReadLine();
+                
+                Console.Write("Enter customer phone number: ");
+                 string phoneNumber = Console.ReadLine();
+
+                Console.WriteLine("Is the customer basic or prime?");
+                string type = Console.ReadLine();
+      
+                if (type == "basic")
+                {
+                    Customer newCustomer = new Customer(customerId, name, phoneNumber, address, type);
+                    customers.Add(newCustomer);
+                    Console.WriteLine("The customer is registered successfully.");
+                }
+
+                else if (type == "prime")
+                {
+                    Console.WriteLine("Please complete the payment of 500 SEK. Type 'done' when completed.");
+
+                    string userType = Console.ReadLine();
+                    Customer newCustomer = new Customer(customerId, name, phoneNumber, address, type);
+                    customers.Add(newCustomer);
+                    Console.WriteLine("The customer is registered successfully.");
+                }
+
+                else
+                {
+                    Console.WriteLine("Invalid customer type.");
+
+                }
             }
         }
-        static bool IsCustomerRegistered(string personalNumber)
+        public static bool Exists(string customerId)
         {
 
-            return customerDatabase.Any(customer => customer.PersonalNumber == personalNumber);
+            return customers.Any(customer => customer.CustomerId == customerId);
         }
     }
 }
 
-    
 
